@@ -4,6 +4,7 @@ project(Supemon C)
 set(CMAKE_C_STANDARD 11)
 
 include_directories(include)
+include_directories(include/cJSON)
 
 add_executable(Supemon main.c 
     src/player.c 
@@ -13,4 +14,5 @@ add_executable(Supemon main.c
     src/shop.c 
     src/save.c 
     src/utils.c 
-    src/item.c)
+    src/item.c
+    include/cJSON/cJSON.c)
