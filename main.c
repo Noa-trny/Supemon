@@ -12,6 +12,11 @@
 #include <dirent.h>
 #include <cJSON.h>
 
+void initialize_player(Player *player) {
+    memset(player->name, 0, sizeof(player->name));
+    player->supcoins = 0;
+}
+
 void choose_save(Player *player) {
     FILE *file = fopen("save.json", "r");
     if (file) {
@@ -37,9 +42,10 @@ void choose_save(Player *player) {
 
             char choice[50];
             printf("Enter the name of the save to load (or type 'new' to create a new game): ");
-            scanf("%s", choice);
+            scanf("%49s", choice);
             if (strcmp(choice, "new") == 0) {
                 printf("Creating a new game...\n");
+                initialize_player(player);
             } else {
                 load_player(player, choice);
                 printf("Loaded player: %s with %d Supcoins.\n", player->name, player->supcoins);
@@ -50,6 +56,7 @@ void choose_save(Player *player) {
         }
     } else {
         printf("No saves found. Creating a new game...\n");
+        initialize_player(player);
     }
 }
 
@@ -62,8 +69,9 @@ int main(void) {
 
     if (strlen(player.name) == 0) {
         printf("Enter your name: ");
-        scanf("%s", player_pseudo);
-        snprintf(player.name, sizeof(player.name), "%s", player_pseudo); 
+        scanf("%49s", player_pseudo); 
+        strncpy(player.name, player_pseudo, sizeof(player.name) - 1); 
+        player.name[sizeof(player.name) - 1] = '\0'; 
 
         printf("Hello %s!\nWelcome in Supémon World!\n", player.name);
 

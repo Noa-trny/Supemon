@@ -56,12 +56,23 @@ void load_player(Player *player, const char *name) {
         fseek(file, 0, SEEK_SET);
         
         char *data = malloc(length + 1);
+        if (data == NULL) {
+            printf("Memory allocation failed.\n");
+            fclose(file);
+            return;
+        }
+        
         fread(data, 1, length, file);
         fclose(file);
         data[length] = '\0';
 
         cJSON *json = cJSON_Parse(data);
         free(data);
+        
+        if (json == NULL) {
+            printf("Error parsing JSON data: %s\n", cJSON_GetErrorPtr());
+            return;
+        }
         
         if (json) {
             cJSON *player_json = cJSON_GetObjectItem(json, name);
