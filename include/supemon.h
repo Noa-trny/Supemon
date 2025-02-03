@@ -1,12 +1,6 @@
 #ifndef SUPEMON_H
 #define SUPEMON_H
-
-typedef struct {
-    char name[50];
-    int damage;
-    int stat_boost;
-    char stat_affected[20];
-} Move;
+#include "move.h"
 
 typedef struct {
     char name[50];
