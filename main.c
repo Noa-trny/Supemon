@@ -85,6 +85,42 @@ void add_starter_supemon(Player *player, int choice) {
     player->selected_supemon[sizeof(player->selected_supemon) - 1] = '\0'; // null-terminate
 }
 
+// Function to display the menu and handle user input
+void display_menu() {
+    int choice;
+    printf("+-----------------------------+\n");
+    printf("| Where do you want to go?    |\n");
+    printf("| 1 - Into the Wild           |\n");
+    printf("| 2 - In the shop             |\n");
+    printf("| 3 - In the Supémon Center    |\n");
+    printf("| 4 - Leave the Game          |\n");
+    printf("+-----------------------------+\n");
+    printf("1, 2, 3 or 4: ");
+    scanf("%d", &choice);
+
+    switch (choice) {
+        case 1:
+            printf("Going Into the Wild...\n");
+            // implement function later here
+            break;
+        case 2:
+            printf("Entering the shop...\n");
+            // implement function later here
+            break;
+        case 3:
+            printf("Entering the Supémon Center...\n");
+            // implement function later here
+            break;
+        case 4:
+            printf("Leaving the game...\n");
+            return;
+        default:
+            printf("Invalid choice. Please try again.\n");
+            break;
+    }
+    display_menu(); // show the menu again
+}
+
 int main(void) {
     Player player; // player variable
     char player_pseudo[50]; // buffer for name
@@ -118,6 +154,9 @@ int main(void) {
         }
     }
 
+    display_menu();
+
+    // game end
     printf("Saving player data...\n"); // saving message
     save_player(&player); // save data
 
