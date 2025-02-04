@@ -85,6 +85,43 @@ void add_starter_supemon(Player *player, int choice) {
     player->selected_supemon[sizeof(player->selected_supemon) - 1] = '\0'; // null-terminate
 }
 
+// Function to display the menu and handle user input
+void display_menu(Player *player) {
+    int choice;
+    printf("+-----------------------------+\n");
+    printf("| Where do you want to go?    |\n");
+    printf("| 1 - Into the Wild           |\n");
+    printf("| 2 - In the shop             |\n");
+    printf("| 3 - In the Supemon Center   |\n");
+    printf("| 4 - Leave the Game          |\n");
+    printf("+-----------------------------+\n");
+    printf("1, 2, 3 or 4: ");
+    scanf("%d", &choice);
+
+    switch (choice) {
+        case 1:
+            printf("Going Into the Wild...\n");
+            start_battle(player);
+            break;
+        case 2:
+            printf("Entering the shop...\n");
+            // implement function later here
+            break;
+        case 3:
+            printf("Entering the Supemon Center...\n");
+            // implement function later here
+            break;
+        case 4:
+            printf("Leaving the game...\n");
+            return;
+        default:
+            printf("Invalid choice. Please try again.\n");
+            break;
+    }
+    save_game_state(player);
+    display_menu(player); // show the menu again
+}
+
 int main(void) {
     Player player; // player variable
     char player_pseudo[50]; // buffer for name
@@ -98,10 +135,10 @@ int main(void) {
         strncpy(player.name, player_pseudo, sizeof(player.name) - 1); // copy name
         player.name[sizeof(player.name) - 1] = '\0';
 
-        printf("Hello %s!\nWelcome in Supémon World!\n", player.name); 
+        printf("Hello %s!\nWelcome in Supemon World!\n", player.name); 
 
         printf("+-----------------------------+\n"); 
-        printf("| Choose your starter Supémon:|\n"); 
+        printf("| Choose your starter Supemon:|\n"); 
         printf("| 1 - Supmander               |\n"); 
         printf("| 2 - Supasaur                |\n");
         printf("| 3 - Supirtle                |\n"); 
@@ -118,6 +155,9 @@ int main(void) {
         }
     }
 
+    display_menu(&player);
+
+    // game end
     printf("Saving player data...\n"); // saving message
     save_player(&player); // save data
 
