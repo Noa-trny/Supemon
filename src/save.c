@@ -2,7 +2,8 @@
 #include <stdio.h> 
 #include <stdlib.h> 
 #include <string.h> 
-#include "cJSON.h" 
+#include "cJSON.h"
+#include "supemon.h" 
 
 void save_player(const Player *player) {
     FILE *file = fopen("save.json", "r"); // open save file
@@ -28,11 +29,29 @@ void save_player(const Player *player) {
     cJSON *player_json = cJSON_CreateObject(); // player JSON object
     cJSON_AddNumberToObject(player_json, "supcoins", player->supcoins); // add supcoins
 
-    cJSON *supemons_array = cJSON_CreateArray(); // Supemons array
-    for (int i = 0; i < MAX_SUPEMON && player->supemons[i][0] != '\0'; i++) { // loop through Supemons
-        cJSON_AddItemToArray(supemons_array, cJSON_CreateString(player->supemons[i])); // add Supemon
+    // create array for Supemons with complete data
+    cJSON *supemons_array = cJSON_CreateArray();
+    for (int i = 0; i < MAX_SUPEMON && player->supemons[i][0] != '\0'; i++) {
+        // create a Supemon object to store all stats
+        Supemon* supemon = create_supemon_by_name(player->supemons[i]);
+        if (supemon) {
+            cJSON *supemon_json = cJSON_CreateObject();
+            cJSON_AddStringToObject(supemon_json, "name", supemon->name);
+            cJSON_AddNumberToObject(supemon_json, "level", supemon->level);
+            cJSON_AddNumberToObject(supemon_json, "exp", supemon->exp);
+            cJSON_AddNumberToObject(supemon_json, "hp", supemon->hp);
+            cJSON_AddNumberToObject(supemon_json, "max_hp", supemon->max_hp);
+            cJSON_AddNumberToObject(supemon_json, "attack", supemon->attack);
+            cJSON_AddNumberToObject(supemon_json, "defense", supemon->defense);
+            cJSON_AddNumberToObject(supemon_json, "evasion", supemon->evasion);
+            cJSON_AddNumberToObject(supemon_json, "accuracy", supemon->accuracy);
+            cJSON_AddNumberToObject(supemon_json, "speed", supemon->speed);
+            
+            cJSON_AddItemToArray(supemons_array, supemon_json);
+            free(supemon);
+        }
     }
-    cJSON_AddItemToObject(player_json, "supemons", supemons_array); // add array to player JSON
+    cJSON_AddItemToObject(player_json, "supemons", supemons_array);
 
     if (player->selected_supemon[0] != '\0') { // if selected Supemon exists
         cJSON_AddStringToObject(player_json, "selected_supemon", player->selected_supemon); // add selected Supemon
@@ -89,20 +108,27 @@ void load_player(Player *player, const char *name) {
                 snprintf(player->name, sizeof(player->name), "%s", name); // copy name
                 player->supcoins = cJSON_GetObjectItem(player_json, "supcoins")->valueint; // load supcoins
                 
-                cJSON *supemons_array = cJSON_GetObjectItem(player_json, "supemons"); // get Supemons array
-                if (supemons_array) { // if array exists
-                    int i = 0; // index
-                    cJSON *supemon; // Supemon variable
-                    cJSON_ArrayForEach(supemon, supemons_array) { // iterate Supemons
-                        if (i < MAX_SUPEMON) { // if within bounds
-                            const char *supemon_name = supemon->valuestring; // get name
-                            strncpy(player->supemons[i], supemon_name, sizeof(player->supemons[i]) - 1); // copy name
-                            player->supemons[i][sizeof(player->supemons[i]) - 1] = '\0'; // null-terminate
-                            i++; // increment index
+                cJSON *supemons_array = cJSON_GetObjectItem(player_json, "supemons");
+                if (supemons_array) {
+                    int i = 0;
+                    cJSON *supemon_json;
+                    cJSON_ArrayForEach(supemon_json, supemons_array) {
+                        if (i < MAX_SUPEMON) {
+                            const char *supemon_name = cJSON_GetObjectItem(supemon_json, "name")->valuestring;
+                            strncpy(player->supemons[i], supemon_name, sizeof(player->supemons[i]) - 1);
+                            player->supemons[i][sizeof(player->supemons[i]) - 1] = '\0';
+                            
+                            // store the first Supemon as selected if none is selected
+                            if (i == 0 && player->selected_supemon[0] == '\0') {
+                                strncpy(player->selected_supemon, supemon_name, sizeof(player->selected_supemon) - 1);
+                                player->selected_supemon[sizeof(player->selected_supemon) - 1] = '\0';
+                            }
+                            i++;
                         }
                     }
-                    for (; i < MAX_SUPEMON; i++) { // clear remaining Supemons
-                        player->supemons[i][0] = '\0'; // set to empty
+                    // clear remaining slots
+                    for (; i < MAX_SUPEMON; i++) {
+                        player->supemons[i][0] = '\0';
                     }
                 }
                 
@@ -122,4 +148,9 @@ void load_player(Player *player, const char *name) {
     } else {
         printf("Error loading player data.\n"); // error if file can't be opened
     }
+}
+
+void save_game_state(Player *player) {
+    printf("Saving game...\n");
+    save_player(player);
 }

@@ -92,7 +92,7 @@ void display_menu(Player *player) {
     printf("| Where do you want to go?    |\n");
     printf("| 1 - Into the Wild           |\n");
     printf("| 2 - In the shop             |\n");
-    printf("| 3 - In the Supemon Center    |\n");
+    printf("| 3 - In the Supemon Center   |\n");
     printf("| 4 - Leave the Game          |\n");
     printf("+-----------------------------+\n");
     printf("1, 2, 3 or 4: ");
@@ -118,6 +118,7 @@ void display_menu(Player *player) {
             printf("Invalid choice. Please try again.\n");
             break;
     }
+    save_game_state(player);
     display_menu(player); // show the menu again
 }
 
