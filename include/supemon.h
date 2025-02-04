@@ -20,6 +20,9 @@ typedef struct {
     Move moves[2];
 } Supemon;
 
+Supemon* create_supemon_copy(const Supemon* source);
+Supemon* create_supemon_by_name(const char* name);
+void level_up_supemon(Supemon* supemon);
 
 static const Supemon SUPMANDER = {
     .name = "Supmander",
