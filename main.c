@@ -2,14 +2,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include "player.h"
-//#include "supemon.h"
-//#include "move.h"
-//#include "battle.h"
-//#include "shop.h"
+#include "battle.h"
 #include "save.h"
-//#include "utils.h"
-//#include "item.h"
-#include <dirent.h>
 #include <cJSON.h>
 
 void initialize_player(Player *player) {
