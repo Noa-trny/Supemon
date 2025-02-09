@@ -91,28 +91,68 @@ void buy_item(int item_index, Player *player) {
     save_player(player);
 }
 
-// displays shop interface:
-// - shows player's supcoins
-// - lists available items with prices and descriptions
-// - handles purchase input
-void display_shop(Player *player) {
-    printf("Welcome to the shop!\n");
-    printf("You have %d Supcoins.\n", player->supcoins);
-    printf("Available items:\n");
+// handles item selling process:
+// - validates item selection
+// - calculates sell price (half of purchase price)
+// - updates player inventory and supcoins
+// - saves changes to player data
+void sell_item(int item_index, Player *player) {
+    // validate item selection
+    if (item_index < 0 || item_index >= MAX_ITEMS) {
+        printf("Invalid item selection.\n");
+        return;
+    }
 
-    // display available items
+    ShopItem *item = &player->items[item_index];
+    // check if player has the item
+    if (item->quantity <= 0) {
+        printf("You don't have this item.\n");
+        return;
+    }
+
+    // calculate sell price (half of purchase price)
+    int sell_price = get_item_sell_price(item);
+    
+    // process sale
+    player->supcoins += sell_price;
+    item->quantity--;
+
+    printf("Sold %s for %d Supcoins!\n", item->name, sell_price);
+    if (item->quantity == 0) {
+        // Clear item data when quantity reaches 0
+        memset(item, 0, sizeof(ShopItem));
+    }
+
+    save_player(player);
+}
+
+// displays selling interface:
+// - shows player's items with sell prices
+// - handles selling input
+void display_sell_menu(Player *player) {
+    printf("\nYour items (sell prices):\n");
+    int available_count = 0;
+
+    // display player's items with sell prices
     for (int i = 0; i < MAX_ITEMS; i++) {
-        if (shop_items[i].quantity > 0) {
-            printf("%d. %s - %d Supcoins (Stock: %d) - %s\n",
-                   i + 1, shop_items[i].name, shop_items[i].price, 
-                   shop_items[i].quantity, shop_items[i].description);
+        if (player->items[i].quantity > 0) {
+            printf("%d. %s - %d Supcoins (Quantity: %d)\n",
+                   i + 1, player->items[i].name, 
+                   get_item_sell_price(&player->items[i]), 
+                   player->items[i].quantity);
+            available_count++;
         }
     }
 
-    // handle purchase input
+    if (available_count == 0) {
+        printf("You have no items to sell.\n");
+        return;
+    }
+
+    // handle selling input
     int item_index;
     while (1) {
-        printf("Enter item number to buy (0 to exit): ");
+        printf("Enter item number to sell (0 to exit): ");
         scanf("%d", &item_index);
 
         if (item_index == 0) {
@@ -120,6 +160,61 @@ void display_shop(Player *player) {
             break;
         }
 
-        buy_item(item_index - 1, player);
+        sell_item(item_index - 1, player);
+    }
+}
+
+void display_shop(Player *player) {
+    while (1) {
+        printf("\nWelcome to the shop!\n");
+        printf("You have %d Supcoins.\n", player->supcoins);
+        printf("\nWhat would you like to do?\n");
+        printf("1. Buy items\n");
+        printf("2. Sell items\n");
+        printf("3. Exit shop\n");
+        
+        int choice;
+        printf("Enter your choice (1-3): ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                printf("\nAvailable items:\n");
+                // display available items
+                for (int i = 0; i < MAX_ITEMS; i++) {
+                    if (shop_items[i].quantity > 0) {
+                        printf("%d. %s - %d Supcoins (Stock: %d) - %s\n",
+                               i + 1, shop_items[i].name, shop_items[i].price, 
+                               shop_items[i].quantity, shop_items[i].description);
+                    }
+                }
+
+                // handle purchase input
+                int item_index;
+                while (1) {
+                    printf("Enter item number to buy (0 to exit): ");
+                    scanf("%d", &item_index);
+
+                    if (item_index == 0) {
+                        printf("Thank you for visiting!\n");
+                        break;
+                    }
+
+                    buy_item(item_index - 1, player);
+                }
+                break;
+
+            case 2:
+                display_sell_menu(player);
+                break;
+
+            case 3:
+                printf("Thank you for visiting!\n");
+                return;
+
+            default:
+                printf("Invalid choice. Please try again.\n");
+                break;
+        }
     }
 }
