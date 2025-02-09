@@ -33,3 +33,11 @@ Supemon is a simple C-based game in terminal where players can choose and battle
    cd build
    cmake ..
    make
+
+## Documentation
+Please see differents files in `docs/`.
+- `battle.md`: Explains battle mechanics, moves, and combat system
+- `center.md`: Details Supemon Center healing functionality and services
+- `items.md`: Lists available items, their effects, and usage
+- `save.md`: Explains save/load game system and file structure
+- `project.md`: Explains how the game works with all features
