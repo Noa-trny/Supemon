@@ -2,7 +2,8 @@
 #define UTILS_H
 
 #include "player.h"
+#include "supemon.h"
 
-void display_all_supemons_hp(const Player* player);
+void update_player_supemon_stats(Player* player, Supemon* supemon);
 
 #endif // UTILS_H

@@ -7,13 +7,12 @@ include_directories(include)
 include_directories(include/cJSON)
 
 add_executable(Supemon main.c 
-    src/player.c 
     src/supemon.c 
-    src/move.c 
     src/battle.c 
     src/shop.c 
     src/save.c 
     src/utils.c 
     src/item.c
     src/center.c
+    src/display.c
     include/cJSON/cJSON.c)

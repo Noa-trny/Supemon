@@ -1,5 +1,6 @@
 #include "battle.h"
 #include "save.h"
+#include "display.h"
 #include <stdlib.h>
 #include <time.h>
 #include <stdio.h>
@@ -42,50 +43,6 @@ static void enemy_turn(Battle* battle) {
     printf("\nEnemy %s used %s!\n", battle->enemy_supemon->name, selected_move->name);
     apply_move_effects(battle->enemy_supemon, battle->player_supemon, selected_move);
     battle->is_player_turn = 1;
-}
-
-static void display_battle_status(Battle *battle) {
-    printf("\nYour turn...\n\n");
-    printf("%s (enemy)\n", battle->enemy_supemon->name);
-    printf("--------------------------------\n");
-    printf("HP: %d/%d\tLvl: %d\n", 
-           battle->enemy_supemon->hp, 
-           battle->enemy_supemon->max_hp, 
-           battle->enemy_supemon->level);
-    printf("Atk: %d\tDef: %d\n", 
-           battle->enemy_supemon->attack, 
-           battle->enemy_supemon->defense);
-    printf("Acc: %d\tEva: %d\n", 
-           battle->enemy_supemon->accuracy, 
-           battle->enemy_supemon->evasion);
-    printf("--------------------------------\n");
-    
-    printf("%s (%s)\n", 
-           battle->player_supemon->name,
-           battle->player->name);
-    printf("HP: %d/%d\tLvl: %d\n", 
-           battle->player_supemon->hp, 
-           battle->player_supemon->max_hp, 
-           battle->player_supemon->level);
-    printf("Atk: %d\tDef: %d\n", 
-           battle->player_supemon->attack, 
-           battle->player_supemon->defense);
-    printf("Acc: %d\tEva: %d\n", 
-           battle->player_supemon->accuracy, 
-           battle->player_supemon->evasion);
-    printf("--------------------------------\n");
-}
-
-static void display_battle_menu(void) {
-    printf("+-----------------------------+\n");
-    printf("|What will you do?           |\n");
-    printf("| 1 - Move                   |\n");
-    printf("| 2 - Change Supemon         |\n");
-    printf("| 3 - Use item               |\n");
-    printf("| 4 - Capture                |\n");
-    printf("| 5 - Run away               |\n");
-    printf("+-----------------------------+\n");
-    printf("1, 2, 3, 4 or 5: ");
 }
 
 static void battle_move(Battle *battle) {
