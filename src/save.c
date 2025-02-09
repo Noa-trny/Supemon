@@ -5,12 +5,18 @@
 #include "cJSON.h"
 #include "supemon.h" 
 
+// saves complete player data to JSON file:
+// - reads existing save file if present
+// - updates or creates player entry
+// - saves: supcoins, supemons (with stats), items
 void save_player(const Player *player) {
+    // try to read existing save file
     FILE *file = fopen("save.json", "r");
     cJSON *json = NULL;
     cJSON *old_json = NULL;
 
     if (file) {
+        // read and parse existing save data
         fseek(file, 0, SEEK_END);
         long length = ftell(file);
         fseek(file, 0, SEEK_SET);
@@ -28,11 +34,14 @@ void save_player(const Player *player) {
         json = cJSON_CreateObject();
     }
 
+    // create player JSON object
     cJSON *player_json = cJSON_CreateObject();
     cJSON_AddNumberToObject(player_json, "supcoins", player->supcoins);
 
+    // save supemons with their stats
     cJSON *supemons_array = cJSON_CreateArray();
     
+    // try to preserve existing supemon stats
     cJSON *old_player_json = NULL;
     cJSON *old_supemons_array = NULL;
     if (old_json) {
@@ -42,6 +51,7 @@ void save_player(const Player *player) {
         }
     }
 
+    // save each supemon's data
     for (int i = 0; i < MAX_SUPEMON && player->supemons[i][0] != '\0'; i++) {
         cJSON *supemon_json = cJSON_CreateObject();
         
@@ -86,10 +96,12 @@ void save_player(const Player *player) {
     }
     cJSON_AddItemToObject(player_json, "supemons", supemons_array);
 
+    // save selected supemon
     if (player->selected_supemon[0] != '\0') {
         cJSON_AddStringToObject(player_json, "selected_supemon", player->selected_supemon);
     }
 
+    // save inventory items
     cJSON *items_array = cJSON_CreateArray();
     for (int i = 0; i < MAX_ITEMS; i++) {
         if (player->items[i].quantity > 0) {
@@ -105,12 +117,14 @@ void save_player(const Player *player) {
     }
     cJSON_AddItemToObject(player_json, "items", items_array);
 
+    // update or add player data to save file
     if (cJSON_GetObjectItem(json, player->name)) {
         cJSON_ReplaceItemInObject(json, player->name, player_json);
     } else {
         cJSON_AddItemToObject(json, player->name, player_json);
     }
 
+    // write updated save file
     file = fopen("save.json", "w");
     if (file) {
         char *json_string = cJSON_Print(json);
@@ -127,7 +141,12 @@ void save_player(const Player *player) {
     cJSON_Delete(json);
 }
 
+// loads player data from save file:
+// - reads and parses save file
+// - loads player info, supemons, and items
+// - initializes player struct with loaded data
 void load_player(Player *player, const char *name) {
+    // open and read save file
     FILE *file = fopen("save.json", "r");
     if (file) {
         fseek(file, 0, SEEK_END);
@@ -139,15 +158,18 @@ void load_player(Player *player, const char *name) {
         fclose(file);
         data[length] = '\0';
 
+        // parse save data
         cJSON *json = cJSON_Parse(data);
         free(data);
         
         if (json) {
             cJSON *player_json = cJSON_GetObjectItem(json, name);
             if (player_json) {
+                // load basic player info
                 snprintf(player->name, sizeof(player->name), "%s", name);
                 player->supcoins = cJSON_GetObjectItem(player_json, "supcoins")->valueint;
 
+                // load supemons and their stats
                 cJSON *supemons_array = cJSON_GetObjectItem(player_json, "supemons");
                 if (supemons_array) {
                     int i = 0;
@@ -178,12 +200,14 @@ void load_player(Player *player, const char *name) {
                     }
                 }
 
+                // load selected supemon
                 cJSON *selected_supemon = cJSON_GetObjectItem(player_json, "selected_supemon");
                 if (selected_supemon && selected_supemon->valuestring) {
                     strncpy(player->selected_supemon, selected_supemon->valuestring, sizeof(player->selected_supemon) - 1);
                     player->selected_supemon[sizeof(player->selected_supemon) - 1] = '\0';
                 }
 
+                // load inventory items
                 cJSON *items_array = cJSON_GetObjectItem(player_json, "items");
                 if (items_array) {
                     int i = 0;
@@ -219,11 +243,15 @@ void load_player(Player *player, const char *name) {
     }
 }
 
+// quick save of current game state
 void save_game_state(Player *player) {
     printf("Saving game...\n");
     save_player(player);
 }
 
+// updates specific supemon's stats in save file:
+// - preserves experience and level progress
+// - updates HP and other battle stats
 void update_player_supemon_stats(Player* player, Supemon* supemon) {
     FILE *file = fopen("save.json", "r");
     cJSON *json = NULL;

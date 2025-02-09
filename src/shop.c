@@ -5,6 +5,10 @@
 #include <stdio.h>
 #include <string.h>
 
+// sets up initial shop inventory with default items:
+// - potion: basic healing item
+// - super potion: stronger healing item
+// - rare candy: level up item
 void initialize_shop_items(void) {
     ShopItem items[] = {
         {
@@ -36,26 +40,36 @@ void initialize_shop_items(void) {
     memcpy(shop_items, items, sizeof(items));
 }
 
+// handles item purchase process:
+// - validates item selection and availability
+// - checks if player has enough supcoins
+// - updates player inventory and shop stock
+// - saves changes to player data
 void buy_item(int item_index, Player *player) {
+    // validate item selection
     if (item_index < 0 || item_index >= MAX_ITEMS) {
         printf("Invalid item selection.\n");
         return;
     }
 
     ShopItem *item = &shop_items[item_index];
+    // check item stock
     if (item->quantity <= 0) {
         printf("Item is out of stock.\n");
         return;
     }
 
+    // check player funds
     if (player->supcoins < item->price) {
         printf("Not enough Supcoins.\n");
         return;
     }
 
+    // process purchase
     player->supcoins -= item->price;
     item->quantity--;
 
+    // update existing item quantity if player already has it
     for (int i = 0; i < MAX_ITEMS; i++) {
         if (strcmp(player->items[i].name, item->name) == 0) {
             player->items[i].quantity++;
@@ -64,6 +78,7 @@ void buy_item(int item_index, Player *player) {
         }
     }
 
+    // add new item to first empty inventory slot
     for (int i = 0; i < MAX_ITEMS; i++) {
         if (player->items[i].quantity == 0) {
             memcpy(&player->items[i], item, sizeof(ShopItem));
@@ -76,11 +91,16 @@ void buy_item(int item_index, Player *player) {
     save_player(player);
 }
 
+// displays shop interface:
+// - shows player's supcoins
+// - lists available items with prices and descriptions
+// - handles purchase input
 void display_shop(Player *player) {
     printf("Welcome to the shop!\n");
     printf("You have %d Supcoins.\n", player->supcoins);
     printf("Available items:\n");
 
+    // display available items
     for (int i = 0; i < MAX_ITEMS; i++) {
         if (shop_items[i].quantity > 0) {
             printf("%d. %s - %d Supcoins (Stock: %d) - %s\n",
@@ -89,6 +109,7 @@ void display_shop(Player *player) {
         }
     }
 
+    // handle purchase input
     int item_index;
     while (1) {
         printf("Enter item number to buy (0 to exit): ");

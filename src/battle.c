@@ -8,13 +8,19 @@
 #include "cJSON.h"
 #include "utils.h"
 
+// handles move execution and damage calculation:
+// - calculates dodge chance based on evasion/accuracy ratio
+// - applies damage based on attacker's attack and defender's defense
+// - handles stat boost moves (attack, defense, evasion)
 static void apply_move_effects(Supemon* attacker, Supemon* defender, Move* move) {
+    // calculate dodge probability
     float dodge_chance = (float)defender->evasion / (attacker->accuracy + defender->evasion);
     if ((float)rand() / RAND_MAX < dodge_chance) {
         printf("%s dodged the attack!\n", defender->name);
         return;
     }
 
+    // handle damage-dealing moves
     if (move->damage > 0) {
         int base_damage = move->damage * attacker->attack;
         int damage = base_damage / (defender->defense / 2 + 1);
@@ -24,6 +30,7 @@ static void apply_move_effects(Supemon* attacker, Supemon* defender, Move* move)
         printf("%s took %d damage!\n", defender->name, damage);
     }
 
+    // handle stat-boosting moves
     if (move->stat_boost > 0) {
         if (strcmp(move->stat_affected, "attack") == 0) {
             attacker->attack += move->stat_boost;
@@ -36,6 +43,7 @@ static void apply_move_effects(Supemon* attacker, Supemon* defender, Move* move)
     }
 }
 
+// handles enemy AI turn by randomly selecting and using a move
 static void enemy_turn(Battle* battle) {
     int move_index = rand() % 2;
     Move* selected_move = &battle->enemy_supemon->moves[move_index];
@@ -45,7 +53,9 @@ static void enemy_turn(Battle* battle) {
     battle->is_player_turn = 1;
 }
 
+// handles player move selection and execution during battle
 static void battle_move(Battle *battle) {
+    // display move options
     printf("\nChoose your move:\n");
     printf("1 - %s\n", battle->player_supemon->moves[0].name);
     printf("2 - %s\n", battle->player_supemon->moves[1].name);
@@ -65,6 +75,7 @@ static void battle_move(Battle *battle) {
     battle->is_player_turn = 0;
 }
 
+// calculates and handles escape attempt based on speed comparison
 static int battle_run_away(Battle *battle) {
     float chance = (float)battle->player_supemon->speed / 
                   (battle->player_supemon->speed + battle->enemy_supemon->speed);
@@ -79,11 +90,16 @@ static int battle_run_away(Battle *battle) {
     return 0;
 }
 
+// handles capture attempt of wild supemon:
+// - chance increases as enemy hp decreases
+// - checks for available team slot
+// - adds captured supemon to player's team
 static int battle_capture(Battle *battle, Player *player) {
     float chance = (float)(battle->enemy_supemon->max_hp - battle->enemy_supemon->hp) / 
                   battle->enemy_supemon->max_hp - 0.5f;
     
     if ((float)rand() / RAND_MAX < chance) {
+        // find empty slot in team
         int slot = 0;
         while (slot < MAX_SUPEMON && player->supemons[slot][0] != '\0') {
             slot++;
@@ -106,6 +122,9 @@ static int battle_capture(Battle *battle, Player *player) {
     return 0;
 }
 
+// calculates and awards battle rewards:
+// - random supcoins (100-500)
+// - experience points based on enemy level and random multiplier
 static void calculate_rewards(Player* player, Battle* battle) {
     int supcoins = 100 + (rand() % 401);
     player->supcoins += supcoins;
@@ -119,6 +138,7 @@ static void calculate_rewards(Player* player, Battle* battle) {
            exp_gained);
 }
 
+// loads supemon stats from save file JSON data
 static void load_supemon_stats(Supemon* supemon, cJSON* supemon_json) {
     supemon->level = cJSON_GetObjectItem(supemon_json, "level")->valueint;
     supemon->exp = cJSON_GetObjectItem(supemon_json, "exp")->valueint;
@@ -131,6 +151,10 @@ static void load_supemon_stats(Supemon* supemon, cJSON* supemon_json) {
     supemon->speed = cJSON_GetObjectItem(supemon_json, "speed")->valueint;
 }
 
+// initializes battle state:
+// - loads player's active supemon from save
+// - creates random enemy supemon at appropriate level
+// - determines first turn based on speed comparison
 static void initialize_battle(Battle* battle, Player* player) {
     battle->player = player;
     battle->player_supemon = NULL;
@@ -191,6 +215,11 @@ static void initialize_battle(Battle* battle, Player* player) {
                             (rand() % 2) == 0;
 }
 
+// main battle loop handling:
+// - turn management
+// - win/loss conditions
+// - player actions (move, switch, item, capture, run)
+// - enemy actions
 void start_battle(Player *player) {
     printf("\nBefore battle:");
     display_all_supemons_hp(player);
@@ -261,6 +290,10 @@ void start_battle(Player *player) {
     display_all_supemons_hp(player);
 }
 
+// handles supemon switching during battle:
+// - displays available supemons
+// - loads selected supemon stats from save
+// - updates active supemon
 void battle_change_supemon(Battle *battle, Player *player) {
     printf("\nChoose a Supemon:\n");
     int available_count = 0;
@@ -345,6 +378,10 @@ void battle_change_supemon(Battle *battle, Player *player) {
     }
 }
 
+// handles item usage during battle:
+// - displays available items
+// - applies item effects
+// - updates inventory
 void battle_use_item(Battle* battle) {
     printf("\nChoose an item:\n");
     int available_count = 0;

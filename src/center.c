@@ -7,15 +7,22 @@
 #include "supemon.h"
 #include "save.h"
 
+// heals all player's supemons to full health:
+// - loads current supemon stats from save file
+// - displays each supemon's HP before healing
+// - restores HP to maximum
+// - updates save file with healed stats
 void heal_supemons(Player *player) {
     printf("\nWelcome to the Supemon Center!\n");
     printf("Your Supemons:\n");
     
     int has_supemons = 0;
+    // load save file for current stats
     FILE *file = fopen("save.json", "r");
     cJSON *json = NULL;
     
     if (file) {
+        // read and parse save file
         fseek(file, 0, SEEK_END);
         long length = ftell(file);
         fseek(file, 0, SEEK_SET);
@@ -28,11 +35,13 @@ void heal_supemons(Player *player) {
         free(data);
     }
     
+    // process each supemon in player's team
     for (int i = 0; i < MAX_SUPEMON && player->supemons[i][0] != '\0'; i++) {
         Supemon* supemon = create_supemon_by_name(player->supemons[i]);
         if (supemon) {
             has_supemons = 1;
             
+            // load current stats from save if available
             if (json) {
                 cJSON *player_json = cJSON_GetObjectItem(json, player->name);
                 if (player_json) {
@@ -41,6 +50,7 @@ void heal_supemons(Player *player) {
                         cJSON *supemon_json;
                         cJSON_ArrayForEach(supemon_json, supemons_array) {
                             if (strcmp(cJSON_GetObjectItem(supemon_json, "name")->valuestring, supemon->name) == 0) {
+                                // load all stats from save
                                 supemon->level = cJSON_GetObjectItem(supemon_json, "level")->valueint;
                                 supemon->exp = cJSON_GetObjectItem(supemon_json, "exp")->valueint;
                                 supemon->max_hp = cJSON_GetObjectItem(supemon_json, "max_hp")->valueint;
@@ -56,6 +66,7 @@ void heal_supemons(Player *player) {
                 }
             }
             
+            // display current HP and heal
             printf("%d - %s (HP: %d/%d)\n", i + 1, supemon->name, supemon->hp, supemon->max_hp);
             supemon->hp = supemon->max_hp;
             update_player_supemon_stats(player, supemon);
