@@ -17,6 +17,8 @@ void initialize_player(Player *player) {
     // clear supemon arrays (owned and selected)
     memset(player->supemons, 0, sizeof(player->supemons));
     memset(player->selected_supemon, 0, sizeof(player->selected_supemon));
+    // initialize items array
+    initialize_player_items(player);
 }
 
 // handles save game selection or creates new game

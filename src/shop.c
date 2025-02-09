@@ -5,6 +5,20 @@
 #include <stdio.h>
 #include <string.h>
 
+// initialize a single item slot to empty state
+static void initialize_item_slot(ShopItem *item) {
+    memset(item, 0, sizeof(ShopItem));
+    item->type = ITEM_COUNT; // invalid type to mark as empty
+    item->quantity = 0;
+}
+
+// initialize all player item slots to empty state
+void initialize_player_items(Player *player) {
+    for (int i = 0; i < MAX_ITEMS; i++) {
+        initialize_item_slot(&player->items[i]);
+    }
+}
+
 // sets up initial shop inventory with default items:
 // - potion: basic healing item
 // - super potion: stronger healing item
@@ -71,9 +85,10 @@ void buy_item(int item_index, Player *player) {
 
     // update existing item quantity if player already has it
     for (int i = 0; i < MAX_ITEMS; i++) {
-        if (strcmp(player->items[i].name, item->name) == 0) {
+        if (player->items[i].quantity > 0 && strcmp(player->items[i].name, item->name) == 0) {
             player->items[i].quantity++;
             printf("Bought %s! (Quantity: %d)\n", item->name, player->items[i].quantity);
+            save_player(player);
             return;
         }
     }
@@ -81,8 +96,16 @@ void buy_item(int item_index, Player *player) {
     // add new item to first empty inventory slot
     for (int i = 0; i < MAX_ITEMS; i++) {
         if (player->items[i].quantity == 0) {
-            memcpy(&player->items[i], item, sizeof(ShopItem));
+            // copy complete item data
+            strncpy(player->items[i].name, item->name, sizeof(player->items[i].name) - 1);
+            player->items[i].name[sizeof(player->items[i].name) - 1] = '\0';
+            player->items[i].type = item->type;
+            player->items[i].price = item->price;
             player->items[i].quantity = 1;
+            strncpy(player->items[i].description, item->description, sizeof(player->items[i].description) - 1);
+            player->items[i].description[sizeof(player->items[i].description) - 1] = '\0';
+            player->items[i].effect_value = item->effect_value;
+            
             printf("Bought %s!\n", item->name);
             break;
         }
@@ -105,7 +128,7 @@ void sell_item(int item_index, Player *player) {
 
     ShopItem *item = &player->items[item_index];
     // check if player has the item
-    if (item->quantity <= 0) {
+    if (item->quantity <= 0 || item->type == ITEM_COUNT) {
         printf("You don't have this item.\n");
         return;
     }
@@ -119,8 +142,8 @@ void sell_item(int item_index, Player *player) {
 
     printf("Sold %s for %d Supcoins!\n", item->name, sell_price);
     if (item->quantity == 0) {
-        // Clear item data when quantity reaches 0
-        memset(item, 0, sizeof(ShopItem));
+        // clear item slot properly when quantity reaches 0
+        initialize_item_slot(item);
     }
 
     save_player(player);
