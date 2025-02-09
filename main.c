@@ -5,6 +5,8 @@
 #include "battle.h"
 #include "save.h"
 #include <cJSON.h>
+#include "shop.h"
+#define MAX_ITEMS 10
 
 void initialize_player(Player *player) {
     memset(player->name, 0, sizeof(player->name)); // clear name
@@ -99,7 +101,7 @@ void display_menu(Player *player) {
             break;
         case 2:
             printf("Entering the shop...\n");
-            // implement function later here
+            display_shop(player);
             break;
         case 3:
             printf("Entering the Supemon Center...\n");
@@ -120,6 +122,9 @@ int main(void) {
     Player player; // player variable
     char player_pseudo[50]; // buffer for name
     int supemon_choice; // Supemon choice
+
+    initialize_player(&player); // Initialiser le joueur
+    initialize_shop_items(); // Initialiser les items de la boutique
 
     choose_save(&player); // choose save or new game
 

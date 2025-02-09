@@ -221,7 +221,7 @@ void start_battle(Player *player) {
             switch (choice) {
                 case 1: battle_move(&battle); break;
                 case 2: battle_change_supemon(&battle, player); break;
-                case 3: printf("Items not implemented yet!\n"); continue;
+                case 3: battle_use_item(&battle); break;
                 case 4: if (battle_capture(&battle, player)) return;
                     break;
                 case 5: if (battle_run_away(&battle)) return;
@@ -287,5 +287,51 @@ void battle_change_supemon(Battle *battle, Player *player) {
                 return;
             }
         }
+    }
+}
+
+void battle_use_item(Battle* battle) {
+    printf("\nChoose an item:\n");
+    int available_count = 0;
+    
+    for (int i = 0; i < MAX_ITEMS; i++) {
+        if (battle->player->items[i].quantity > 0) {
+            printf("%d - %s (x%d)\n", ++available_count, 
+                   battle->player->items[i].name,
+                   battle->player->items[i].quantity);
+        }
+    }
+    
+    if (available_count == 0) {
+        printf("No items available!\n");
+        return;
+    }
+    
+    printf("%d - Cancel\n", available_count + 1);
+    
+    int choice;
+    scanf("%d", &choice);
+    
+    if (choice == available_count + 1) return;
+    if (choice < 1 || choice > available_count) {
+        printf("Invalid choice!\n");
+        return;
+    }
+    
+    int item_index = -1;
+    int current_index = 0;
+    for (int i = 0; i < MAX_ITEMS; i++) {
+        if (battle->player->items[i].quantity > 0) {
+            current_index++;
+            if (current_index == choice) {
+                item_index = i;
+                break;
+            }
+        }
+    }
+    
+    if (item_index >= 0) {
+        use_item(&battle->player->items[item_index], battle->player_supemon);
+        battle->is_player_turn = 0;
     }
 }

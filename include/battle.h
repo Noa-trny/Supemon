@@ -17,6 +17,7 @@ void battle_move(Battle *battle);
 void battle_change_supemon(Battle *battle, Player *player);
 int battle_run_away(Battle *battle);
 int battle_capture(Battle *battle, Player *player);
+void battle_use_item(Battle *battle);
 
 void display_battle_status(Battle *battle);
 void display_battle_menu(void);

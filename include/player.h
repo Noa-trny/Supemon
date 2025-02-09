@@ -1,6 +1,7 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
+#include "item.h"
 #define MAX_SUPEMON 10
 #define MAX_ITEMS 10
 
@@ -9,7 +10,7 @@ typedef struct {
     char supemons[MAX_SUPEMON][50]; 
     char selected_supemon[50]; 
     int supcoins; 
-    char items[MAX_ITEMS][50]; 
+    ShopItem items[MAX_ITEMS]; // Items que le joueur possède
 } Player;
 
 #endif // PLAYER_H
