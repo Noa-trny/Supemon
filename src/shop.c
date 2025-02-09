@@ -5,8 +5,6 @@
 #include <stdio.h>
 #include <string.h>
 
-ShopItem shop_items[MAX_ITEMS];
-
 void initialize_shop_items(void) {
     ShopItem items[] = {
         {
