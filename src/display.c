@@ -4,6 +4,12 @@
 #include <string.h>
 #include "cJSON.h"
 
+// displays battle action menu with options:
+// - move: use supemon abilities
+// - change: switch active supemon
+// - item: use items from inventory
+// - capture: attempt to catch wild supemon
+// - run: try to escape battle
 void display_battle_menu(void) {
     printf("+-----------------------------+\n");
     printf("|What will you do?           |\n");
@@ -16,8 +22,13 @@ void display_battle_menu(void) {
     printf("1, 2, 3, 4 or 5: ");
 }
 
+// displays current battle status:
+// - shows enemy supemon stats (hp, level, attack, defense, accuracy, evasion)
+// - shows player supemon stats
+// - formats output in a clear, readable way
 void display_battle_status(Battle *battle) {
     printf("\nYour turn...\n\n");
+    // display enemy supemon stats
     printf("%s (enemy)\n", battle->enemy_supemon->name);
     printf("--------------------------------\n");
     printf("HP: %d/%d\tLvl: %d\n", 
@@ -32,6 +43,7 @@ void display_battle_status(Battle *battle) {
            battle->enemy_supemon->evasion);
     printf("--------------------------------\n");
     
+    // display player supemon stats
     printf("%s (%s)\n", 
            battle->player_supemon->name,
            battle->player->name);
@@ -48,10 +60,15 @@ void display_battle_status(Battle *battle) {
     printf("--------------------------------\n");
 }
 
+// displays HP status for all player's supemons:
+// - loads current HP values from save file
+// - shows current/max HP for each supemon
+// - indicates which supemon is currently selected
 void display_all_supemons_hp(const Player* player) {
     printf("\nSupemons HP Status:\n");
     printf("--------------------------------\n");
     
+    // load save file to get current HP values
     FILE *file = fopen("save.json", "r");
     if (file) {
         fseek(file, 0, SEEK_END);
@@ -66,6 +83,7 @@ void display_all_supemons_hp(const Player* player) {
         cJSON *json = cJSON_Parse(data);
         free(data);
         
+        // display HP for each supemon
         if (json) {
             cJSON *player_json = cJSON_GetObjectItem(json, player->name);
             if (player_json) {
