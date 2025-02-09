@@ -272,14 +272,6 @@ void load_player(Player *player, const char *name) {
     }
 }
 
-// quick save function called after important game events:
-// - battles, purchases, healing, etc.
-// - ensures player progress is not lost
-void save_game_state(Player *player) {
-    printf("Saving game...\n");
-    save_player(player);
-}
-
 // updates a specific supemon's stats in the save file:
 // - called after battles, healing, or level ups
 // - preserves experience and level progress

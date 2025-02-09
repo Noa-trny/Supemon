@@ -1,18 +1,13 @@
 # Save System Documentation
 
-## Overview
-
-The Supemon game uses a JSON-based save system to persist player data, including their Supemons, inventory, and progress.
-
-## Core Functions
-
-### Save Functions
+## Functions
 
 1. `save_player(const Player *player)`
-   - Main saving function that handles all player data persistence
-   - Creates or updates the save file in JSON format
-   - Preserves existing data when updating
-   - Handles player info, Supemons, and inventory
+   - Main save function that handles all player data persistence
+   - Manages save file in JSON format for easy data structure
+   - Preserves all player progress and stats
+   - Called after important events (battles, purchases, healing, etc.)
+   - Ensures player progress is not lost
 
 2. `load_player(Player *player, const char *name)`
    - Loads complete player data from save file
@@ -20,25 +15,19 @@ The Supemon game uses a JSON-based save system to persist player data, including
    - Handles missing or corrupted save data
    - Initializes new player if save not found
 
-3. `save_game_state(Player *player)`
-   - Quick save function called after important events
-   - Used after battles, purchases, healing, etc.
-   - Ensures player progress is not lost
-
-4. `update_player_supemon_stats(Player* player, Supemon* supemon)`
+3. `update_player_supemon_stats(Player* player, Supemon* supemon)`
    - Updates specific Supemon stats in save file
    - Preserves experience and level progress
    - Maintains consistency between memory and save file
 
 ## Save File Structure
 
-The save file (`save.json`) uses the following JSON structure:
+The game uses a JSON file (`save.json`) to store all player data:
 
 ```json
 {
-    "save_name": {
+    "PlayerName": {
         "supcoins": 1000,
-        "selected_supemon": "Supmander",
         "supemons": [
             {
                 "name": "Supmander",
@@ -46,48 +35,30 @@ The save file (`save.json`) uses the following JSON structure:
                 "exp": 1200,
                 "hp": 15,
                 "max_hp": 15,
-                "attack": 3,
-                "defense": 2,
-                "evasion": 1,
-                "accuracy": 2,
-                "speed": 2
-            },
-            {
-                "name": "Supirtle",
-                "level": 3,
-                "exp": 800,
-                "hp": 12,
-                "max_hp": 12,
-                "attack": 2,
-                "defense": 3,
-                "evasion": 2,
-                "accuracy": 1,
-                "speed": 2
+                "attack": 8,
+                "defense": 6,
+                "evasion": 4,
+                "accuracy": 7,
+                "speed": 5
             }
         ],
+        "selected_supemon": "Supmander",
         "items": [
             {
                 "name": "Potion",
                 "type": 0,
                 "price": 100,
-                "quantity": 5,
+                "quantity": 3,
                 "description": "Restores 5 HP",
                 "effect_value": 5
-            },
-            {
-                "name": "Rare Candy",
-                "type": 2,
-                "price": 700,
-                "quantity": 1,
-                "description": "Increases Supemon's level by 1",
-                "effect_value": 1
             }
         ]
     }
 }
 ```
 
-# Working
-- Use `save_game_state()` after important events
+## Save System Usage
+
+- Use `save_player()` after important events
 - Update Supemon stats using `update_player_supemon_stats()`
 - When editing `save/load functions` you need to delete your json save file.
