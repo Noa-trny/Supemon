@@ -78,21 +78,47 @@ We hope to see you again!
 ```
 
 ### 4. Shop System
-Players can buy items using Supcoins:
+Players can buy and sell items using Supcoins:
+
+#### Available Items:
 - Potion (100 coins): Restores 5 HP
 - Super Potion (300 coins): Restores 10 HP
 - Rare Candy (700 coins): Increases level by 1
 
-Shop interface example:
+#### Shop Interface:
 ```
 Welcome to the shop!
 You have 1000 Supcoins.
+
+What would you like to do?
+1. Buy items
+2. Sell items
+3. Exit shop
+```
+
+#### Buy Menu:
+```
 Available items:
 1. Potion - 100 Supcoins (Stock: 5) - Restores 5 HP
 2. Super Potion - 300 Supcoins (Stock: 3) - Restores 10 HP
 3. Rare Candy - 700 Supcoins (Stock: 2) - Increases Supemon's level by 1
 Enter item number to buy (0 to exit):
 ```
+
+#### Sell Menu:
+```
+Your items (sell prices):
+1. Potion - 50 Supcoins (Quantity: 2)
+2. Super Potion - 150 Supcoins (Quantity: 1)
+Enter item number to sell (0 to exit):
+```
+
+#### Shop Features:
+- Buy items using Supcoins
+- Sell items for half their purchase price
+- View item descriptions and effects
+- Track item quantities
+- Maximum 10 different items in inventory
 
 ### 5. Main Game Menu
 ```
