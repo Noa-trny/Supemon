@@ -7,21 +7,35 @@
 
 ShopItem shop_items[MAX_ITEMS];
 
-void initialize_shop_items() {
-    strcpy(shop_items[0].name, "Potion");
-    shop_items[0].price = 100;
-    shop_items[0].quantity = 5;
-    strcpy(shop_items[0].description, "Restaure 5 HP.");
+void initialize_shop_items(void) {
+    ShopItem items[] = {
+        {
+            .name = "Potion",
+            .type = ITEM_POTION,
+            .price = 100,
+            .quantity = 5,
+            .description = "Restores 5 HP",
+            .effect_value = 5
+        },
+        {
+            .name = "Super Potion",
+            .type = ITEM_SUPER_POTION,
+            .price = 300,
+            .quantity = 3,
+            .description = "Restores 10 HP",
+            .effect_value = 10
+        },
+        {
+            .name = "Rare Candy",
+            .type = ITEM_RARE_CANDY,
+            .price = 700,
+            .quantity = 2,
+            .description = "Increases Supemon's level by 1",
+            .effect_value = 1
+        }
+    };
 
-    strcpy(shop_items[1].name, "Super Potion");
-    shop_items[1].price = 300;
-    shop_items[1].quantity = 3;
-    strcpy(shop_items[1].description, "Restaure 10 HP.");
-
-    strcpy(shop_items[2].name, "Rare Candy");
-    shop_items[2].price = 700;
-    shop_items[2].quantity = 2;
-    strcpy(shop_items[2].description, "Ajoute un niveau a votre Supemon.");
+    memcpy(shop_items, items, sizeof(items));
 }
 
 void buy_item(int item_index, Player *player) {
@@ -37,47 +51,41 @@ void buy_item(int item_index, Player *player) {
     }
 
     if (player->supcoins < item->price) {
-        printf("You do not have enough Supcoins to buy this item.\n");
+        printf("Not enough Supcoins.\n");
         return;
     }
 
-    // Deduct Supcoins and update item quantity
     player->supcoins -= item->price;
     item->quantity--;
 
-    // Add item to player's inventory
     for (int i = 0; i < MAX_ITEMS; i++) {
         if (strcmp(player->items[i].name, item->name) == 0) {
             player->items[i].quantity++;
-            printf("You bought a %s! (Quantity: %d)\n", item->name, player->items[i].quantity);
-            return; // Item already exists, just update quantity
+            printf("Bought %s! (Quantity: %d)\n", item->name, player->items[i].quantity);
+            return;
         }
     }
 
-    // If item does not exist, add it to the inventory
     for (int i = 0; i < MAX_ITEMS; i++) {
-        if (player->items[i].quantity == 0) { // Find an empty slot
-            strcpy(player->items[i].name, item->name);
-            player->items[i].price = item->price;
+        if (player->items[i].quantity == 0) {
+            memcpy(&player->items[i], item, sizeof(ShopItem));
             player->items[i].quantity = 1;
-            strcpy(player->items[i].description, item->description);
-            printf("You bought a %s!\n", item->name);
+            printf("Bought %s!\n", item->name);
             break;
         }
     }
 
-    // Save player data after purchase
     save_player(player);
 }
 
 void display_shop(Player *player) {
-    printf("Bienvenue dans la boutique !\n");
-    printf("Vous avez %d Supcoins.\n", player->supcoins);
-    printf("Objets disponibles :\n");
+    printf("Welcome to the shop!\n");
+    printf("You have %d Supcoins.\n", player->supcoins);
+    printf("Available items:\n");
 
     for (int i = 0; i < MAX_ITEMS; i++) {
         if (shop_items[i].quantity > 0) {
-            printf("%d. %s - %d Supcoins (Quantite: %d) - %s\n",
+            printf("%d. %s - %d Supcoins (Stock: %d) - %s\n",
                    i + 1, shop_items[i].name, shop_items[i].price, 
                    shop_items[i].quantity, shop_items[i].description);
         }
@@ -85,14 +93,14 @@ void display_shop(Player *player) {
 
     int item_index;
     while (1) {
-        printf("Entrez le numero de l'objet que vous souhaitez acheter (0 pour quitter) : ");
+        printf("Enter item number to buy (0 to exit): ");
         scanf("%d", &item_index);
 
         if (item_index == 0) {
-            printf("Vous avez quitte la boutique.\n");
-            break; // Sortir de la boucle
+            printf("Thank you for visiting!\n");
+            break;
         }
 
-        buy_item(item_index - 1, player); // Appel à la fonction d'achat
+        buy_item(item_index - 1, player);
     }
 }

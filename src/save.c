@@ -63,9 +63,11 @@ void save_player(const Player *player) {
         if (player->items[i].quantity > 0) {
             cJSON *item_json = cJSON_CreateObject();
             cJSON_AddStringToObject(item_json, "name", player->items[i].name);
+            cJSON_AddNumberToObject(item_json, "type", player->items[i].type);
             cJSON_AddNumberToObject(item_json, "price", player->items[i].price);
             cJSON_AddNumberToObject(item_json, "quantity", player->items[i].quantity);
             cJSON_AddStringToObject(item_json, "description", player->items[i].description);
+            cJSON_AddNumberToObject(item_json, "effect_value", player->items[i].effect_value);
             cJSON_AddItemToArray(items_array, item_json);
         }
     }
@@ -146,19 +148,21 @@ void load_player(Player *player, const char *name) {
                     cJSON *item_json;
                     cJSON_ArrayForEach(item_json, items_array) {
                         if (i < MAX_ITEMS) {
-                            const char *item_name = cJSON_GetObjectItem(item_json, "name")->valuestring;
-                            strncpy(player->items[i].name, item_name, sizeof(player->items[i].name) - 1);
-                            player->items[i].name[sizeof(player->items[i].name) - 1] = '\0';
+                            strncpy(player->items[i].name, 
+                                    cJSON_GetObjectItem(item_json, "name")->valuestring,
+                                    sizeof(player->items[i].name) - 1);
+                            player->items[i].type = cJSON_GetObjectItem(item_json, "type")->valueint;
                             player->items[i].price = cJSON_GetObjectItem(item_json, "price")->valueint;
                             player->items[i].quantity = cJSON_GetObjectItem(item_json, "quantity")->valueint;
-                            strncpy(player->items[i].description, cJSON_GetObjectItem(item_json, "description")->valuestring, sizeof(player->items[i].description) - 1);
-                            player->items[i].description[sizeof(player->items[i].description) - 1] = '\0';
+                            strncpy(player->items[i].description,
+                                    cJSON_GetObjectItem(item_json, "description")->valuestring,
+                                    sizeof(player->items[i].description) - 1);
+                            player->items[i].effect_value = cJSON_GetObjectItem(item_json, "effect_value")->valueint;
                             i++;
                         }
                     }
-                    // Clear remaining slots
                     for (; i < MAX_ITEMS; i++) {
-                        player->items[i].quantity = 0; // Reset quantity
+                        player->items[i].quantity = 0;
                     }
                 }
             } else {
