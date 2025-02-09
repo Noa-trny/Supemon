@@ -14,12 +14,6 @@ static int items_used_in_battle = 0;
 //   * rare candy: level up
 // - updates item quantity and usage counter
 void use_item(ShopItem* item, Supemon* target) {
-    // check battle usage limit
-    if (items_used_in_battle >= MAX_ITEMS_PER_BATTLE) {
-        printf("You can't use any more items in this battle!\n");
-        return;
-    }
-
     // apply item effects based on type
     switch (item->type) {
         case ITEM_POTION:
@@ -62,7 +56,7 @@ int get_items_used_in_battle(void) {
     return items_used_in_battle;
 }
 
-// resets battle item usage counter (called at battle end)
+// resets battle item usage counter (called at battle start/end)
 void reset_items_used_in_battle(void) {
     items_used_in_battle = 0;
 }

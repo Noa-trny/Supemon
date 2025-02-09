@@ -228,6 +228,8 @@ void start_battle(Player *player) {
     initialize_battle(&battle, player);
     printf("\nA wild %s appeared!\n", battle.enemy_supemon->name);
     
+    reset_items_used_in_battle();
+    
     while (1) {
         if (battle.player_supemon->hp <= 0) {
             printf("%s fainted! You lost!\n", battle.player_supemon->name);
@@ -383,6 +385,11 @@ void battle_change_supemon(Battle *battle, Player *player) {
 // - applies item effects
 // - updates inventory
 void battle_use_item(Battle* battle) {
+    if (get_items_used_in_battle() >= MAX_ITEMS_PER_BATTLE) {
+        printf("\nYou can't use any more items in this battle! (Limit: %d)\n", MAX_ITEMS_PER_BATTLE);
+        return;
+    }
+
     printf("\nChoose an item:\n");
     int available_count = 0;
     

@@ -35,10 +35,10 @@ typedef struct {
 extern ShopItem shop_items[MAX_ITEMS];
 
 // item management functions
-void initialize_shop_items(void);                      // sets up initial shop inventory
-void use_item(ShopItem* item, Supemon* target);       // applies item effect to target supemon
-int get_item_sell_price(const ShopItem* item);        // calculates item resale value
-int get_items_used_in_battle(void);                   // tracks items used during battle
-void reset_items_used_in_battle(void);                // resets battle item usage counter
+void initialize_shop_items(void);                      // sets up initial shop inventory with default items
+void use_item(ShopItem* item, Supemon* target);       // applies item effect and increments usage counter
+int get_item_sell_price(const ShopItem* item);        // returns item sell price (half of buy price)
+int get_items_used_in_battle(void);                   // returns current number of items used in battle
+void reset_items_used_in_battle(void);                // resets battle item counter to 0
 
 #endif // ITEM_H
