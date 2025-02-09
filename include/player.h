@@ -10,7 +10,7 @@ typedef struct {
     char supemons[MAX_SUPEMON][50]; 
     char selected_supemon[50]; 
     int supcoins; 
-    ShopItem items[MAX_ITEMS]; // Items que le joueur possède
+    ShopItem items[MAX_ITEMS];
 } Player;
 
 #endif // PLAYER_H
