@@ -130,7 +130,7 @@ void display_menu(Player *player) {
             break;
     }
     // save progress after each action and show menu again
-    save_game_state(player);
+    save_player(player);
     display_menu(player);
 }
 

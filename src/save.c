@@ -10,6 +10,13 @@
 // - preserves all player progress and stats
 // - handles both new saves and updates to existing saves
 void save_player(const Player *player) {
+    // create root JSON object
+    cJSON *root = cJSON_CreateObject();
+    if (!root) {
+        printf("Error creating JSON object!\n");
+        return;
+    }
+
     // attempt to read existing save file for data preservation
     FILE *file = fopen("save.json", "r");
     cJSON *json = NULL;      // will contain new save data
