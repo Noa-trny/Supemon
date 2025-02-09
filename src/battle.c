@@ -1,30 +1,29 @@
 #include "battle.h"
+#include "save.h"
 #include <stdlib.h>
 #include <time.h>
 #include <stdio.h>
 #include <string.h>
+#include "cJSON.h"
+#include "utils.h"
 
-void apply_move_effects(Supemon* attacker, Supemon* defender, Move* move) {
-    // calculate dodge chance based on accuracy and evasion
+static void apply_move_effects(Supemon* attacker, Supemon* defender, Move* move) {
     float dodge_chance = (float)defender->evasion / (attacker->accuracy + defender->evasion);
-    // check if the defender dodges the attack
     if ((float)rand() / RAND_MAX < dodge_chance) {
         printf("%s dodged the attack!\n", defender->name);
         return;
     }
 
-    // handle damage moves
     if (move->damage > 0) {
-        // calculate damage based on attack and defense
-        int damage = (move->damage * attacker->attack) / defender->defense;
+        int base_damage = move->damage * attacker->attack;
+        int damage = base_damage / (defender->defense / 2 + 1);
+        if (damage < 1) damage = 1;
         defender->hp -= damage;
         if (defender->hp < 0) defender->hp = 0;
         printf("%s took %d damage!\n", defender->name, damage);
     }
 
-    // handle stat boost moves
     if (move->stat_boost > 0) {
-        // increase attack, defense, or evasion based on the move
         if (strcmp(move->stat_affected, "attack") == 0) {
             attacker->attack += move->stat_boost;
         } else if (strcmp(move->stat_affected, "defense") == 0) {
@@ -36,8 +35,7 @@ void apply_move_effects(Supemon* attacker, Supemon* defender, Move* move) {
     }
 }
 
-void enemy_turn(Battle* battle) {
-    // randomly select a move for the enemy
+static void enemy_turn(Battle* battle) {
     int move_index = rand() % 2;
     Move* selected_move = &battle->enemy_supemon->moves[move_index];
     
@@ -46,8 +44,7 @@ void enemy_turn(Battle* battle) {
     battle->is_player_turn = 1;
 }
 
-void display_battle_status(Battle *battle) {
-    // display enemy status
+static void display_battle_status(Battle *battle) {
     printf("\nYour turn...\n\n");
     printf("%s (enemy)\n", battle->enemy_supemon->name);
     printf("--------------------------------\n");
@@ -63,7 +60,6 @@ void display_battle_status(Battle *battle) {
            battle->enemy_supemon->evasion);
     printf("--------------------------------\n");
     
-    // display player status
     printf("%s (%s)\n", 
            battle->player_supemon->name,
            battle->player->name);
@@ -80,7 +76,7 @@ void display_battle_status(Battle *battle) {
     printf("--------------------------------\n");
 }
 
-void display_battle_menu(void) {
+static void display_battle_menu(void) {
     printf("+-----------------------------+\n");
     printf("|What will you do?           |\n");
     printf("| 1 - Move                   |\n");
@@ -92,8 +88,7 @@ void display_battle_menu(void) {
     printf("1, 2, 3, 4 or 5: ");
 }
 
-void battle_move(Battle *battle) {
-    // prompt user to choose a move
+static void battle_move(Battle *battle) {
     printf("\nChoose your move:\n");
     printf("1 - %s\n", battle->player_supemon->moves[0].name);
     printf("2 - %s\n", battle->player_supemon->moves[1].name);
@@ -108,18 +103,18 @@ void battle_move(Battle *battle) {
         return;
     }
     
-    // apply the selected move effects
     Move *selected_move = &battle->player_supemon->moves[choice - 1];
     apply_move_effects(battle->player_supemon, battle->enemy_supemon, selected_move);
     battle->is_player_turn = 0;
 }
 
-int battle_run_away(Battle *battle) {
+static int battle_run_away(Battle *battle) {
     float chance = (float)battle->player_supemon->speed / 
                   (battle->player_supemon->speed + battle->enemy_supemon->speed);
     
     if ((float)rand() / RAND_MAX < chance) {
         printf("Got away safely!\n");
+        update_player_supemon_stats(battle->player, battle->player_supemon);
         return 1;
     }
     printf("Can't escape!\n");
@@ -127,20 +122,17 @@ int battle_run_away(Battle *battle) {
     return 0;
 }
 
-int battle_capture(Battle *battle, Player *player) {
-    // calculate capture chance based on enemy's HP
+static int battle_capture(Battle *battle, Player *player) {
     float chance = (float)(battle->enemy_supemon->max_hp - battle->enemy_supemon->hp) / 
-                  battle->enemy_supemon->max_hp - 0.5;
+                  battle->enemy_supemon->max_hp - 0.5f;
     
     if ((float)rand() / RAND_MAX < chance) {
         int slot = 0;
-        // find an empty slot to store the captured Supemon
         while (slot < MAX_SUPEMON && player->supemons[slot][0] != '\0') {
             slot++;
         }
         
         if (slot < MAX_SUPEMON) {
-            // store the captured Supemon's name
             strncpy(player->supemons[slot], 
                    battle->enemy_supemon->name, 
                    sizeof(player->supemons[slot]) - 1);
@@ -157,7 +149,7 @@ int battle_capture(Battle *battle, Player *player) {
     return 0;
 }
 
-void calculate_rewards(Player* player, Battle* battle) {
+static void calculate_rewards(Player* player, Battle* battle) {
     int supcoins = 100 + (rand() % 401);
     player->supcoins += supcoins;
     printf("You earned %d Supcoins!\n", supcoins);
@@ -170,9 +162,61 @@ void calculate_rewards(Player* player, Battle* battle) {
            exp_gained);
 }
 
-void initialize_battle(Battle* battle, Player* player) {
+static void load_supemon_stats(Supemon* supemon, cJSON* supemon_json) {
+    supemon->level = cJSON_GetObjectItem(supemon_json, "level")->valueint;
+    supemon->exp = cJSON_GetObjectItem(supemon_json, "exp")->valueint;
+    supemon->hp = cJSON_GetObjectItem(supemon_json, "hp")->valueint;
+    supemon->max_hp = cJSON_GetObjectItem(supemon_json, "max_hp")->valueint;
+    supemon->attack = cJSON_GetObjectItem(supemon_json, "attack")->valueint;
+    supemon->defense = cJSON_GetObjectItem(supemon_json, "defense")->valueint;
+    supemon->evasion = cJSON_GetObjectItem(supemon_json, "evasion")->valueint;
+    supemon->accuracy = cJSON_GetObjectItem(supemon_json, "accuracy")->valueint;
+    supemon->speed = cJSON_GetObjectItem(supemon_json, "speed")->valueint;
+}
+
+static void initialize_battle(Battle* battle, Player* player) {
     battle->player = player;
-    battle->player_supemon = create_supemon_by_name(player->selected_supemon);
+    battle->player_supemon = NULL;
+    
+    FILE *file = fopen("save.json", "r");
+    if (file) {
+        fseek(file, 0, SEEK_END);
+        long length = ftell(file);
+        fseek(file, 0, SEEK_SET);
+        
+        char *data = malloc(length + 1);
+        fread(data, 1, length, file);
+        fclose(file);
+        data[length] = '\0';
+
+        cJSON *json = cJSON_Parse(data);
+        free(data);
+        
+        if (json) {
+            cJSON *player_json = cJSON_GetObjectItem(json, player->name);
+            if (player_json) {
+                cJSON *supemons_array = cJSON_GetObjectItem(player_json, "supemons");
+                if (supemons_array) {
+                    cJSON *supemon_json;
+                    cJSON_ArrayForEach(supemon_json, supemons_array) {
+                        const char *supemon_name = cJSON_GetObjectItem(supemon_json, "name")->valuestring;
+                        if (strcmp(supemon_name, player->selected_supemon) == 0) {
+                            battle->player_supemon = create_supemon_by_name(supemon_name);
+                            if (battle->player_supemon) {
+                                load_supemon_stats(battle->player_supemon, supemon_json);
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+            cJSON_Delete(json);
+        }
+    }
+    
+    if (!battle->player_supemon) {
+        battle->player_supemon = create_supemon_by_name(player->selected_supemon);
+    }
     
     int enemy_choice = rand() % 3;
     switch (enemy_choice) {
@@ -185,29 +229,30 @@ void initialize_battle(Battle* battle, Player* player) {
         level_up_supemon(battle->enemy_supemon);
     }
     
-    battle->is_player_turn = (battle->player_supemon->speed > battle->enemy_supemon->speed) ? 1 :
-                            (battle->player_supemon->speed < battle->enemy_supemon->speed) ? 0 :
-                            (rand() % 2);
+    battle->is_player_turn = battle->player_supemon->speed != battle->enemy_supemon->speed ?
+                            battle->player_supemon->speed > battle->enemy_supemon->speed :
+                            (rand() % 2) == 0;
 }
 
 void start_battle(Player *player) {
+    printf("\nBefore battle:");
+    display_all_supemons_hp(player);
+    
     Battle battle;
     initialize_battle(&battle, player);
-    
-    // announce the appearance of the enemy Supemon
     printf("\nA wild %s appeared!\n", battle.enemy_supemon->name);
     
     while (1) {
-        // check if player's Supemon fainted
         if (battle.player_supemon->hp <= 0) {
             printf("%s fainted! You lost!\n", battle.player_supemon->name);
+            update_player_supemon_stats(player, battle.player_supemon);
             break;
         }
         
-        // check if enemy's Supemon fainted
         if (battle.enemy_supemon->hp <= 0) {
             printf("Enemy %s fainted! You won!\n", battle.enemy_supemon->name);
             calculate_rewards(player, &battle);
+            update_player_supemon_stats(player, battle.player_supemon);
             break;
         }
         
@@ -222,9 +267,24 @@ void start_battle(Player *player) {
                 case 1: battle_move(&battle); break;
                 case 2: battle_change_supemon(&battle, player); break;
                 case 3: battle_use_item(&battle); break;
-                case 4: if (battle_capture(&battle, player)) return;
+                case 4: 
+                    if (battle_capture(&battle, player)) {
+                        update_player_supemon_stats(player, battle.player_supemon);
+                        free(battle.player_supemon);
+                        free(battle.enemy_supemon);
+                        printf("\nAfter battle:");
+                        display_all_supemons_hp(player);
+                        return;
+                    }
                     break;
-                case 5: if (battle_run_away(&battle)) return;
+                case 5: 
+                    if (battle_run_away(&battle)) {
+                        free(battle.player_supemon);
+                        free(battle.enemy_supemon);
+                        printf("\nAfter battle:");
+                        display_all_supemons_hp(player);
+                        return;
+                    }
                     break;
                 default:
                     printf("Invalid choice!\n");
@@ -233,20 +293,22 @@ void start_battle(Player *player) {
         } else {
             enemy_turn(&battle);
         }
+
+        update_player_supemon_stats(player, battle.player_supemon);
     }
     
-    // free allocated memory for Supemons
     free(battle.player_supemon);
     free(battle.enemy_supemon);
+    
+    printf("\nAfter battle:");
+    display_all_supemons_hp(player);
 }
 
 void battle_change_supemon(Battle *battle, Player *player) {
     printf("\nChoose a Supemon:\n");
     int available_count = 0;
     
-    // display available Supemons
     for (int i = 0; i < MAX_SUPEMON && player->supemons[i][0] != '\0'; i++) {
-        // skip currently active Supemon
         if (strcmp(player->supemons[i], battle->player_supemon->name) != 0) {
             printf("%d - %s\n", ++available_count, player->supemons[i]);
         }
@@ -268,19 +330,55 @@ void battle_change_supemon(Battle *battle, Player *player) {
         return;
     }
     
-    // find and switch to the chosen Supemon
     int current_index = 0;
     for (int i = 0; i < MAX_SUPEMON && player->supemons[i][0] != '\0'; i++) {
         if (strcmp(player->supemons[i], battle->player_supemon->name) != 0) {
             current_index++;
             if (current_index == choice) {
-                // update selected Supemon
                 strncpy(player->selected_supemon, player->supemons[i], sizeof(player->selected_supemon) - 1);
                 player->selected_supemon[sizeof(player->selected_supemon) - 1] = '\0';
                 
-                // free current Supemon and create new one
                 free(battle->player_supemon);
-                battle->player_supemon = create_supemon_by_name(player->supemons[i]);
+                
+                FILE *file = fopen("save.json", "r");
+                if (file) {
+                    fseek(file, 0, SEEK_END);
+                    long length = ftell(file);
+                    fseek(file, 0, SEEK_SET);
+                    
+                    char *data = malloc(length + 1);
+                    fread(data, 1, length, file);
+                    fclose(file);
+                    data[length] = '\0';
+
+                    cJSON *json = cJSON_Parse(data);
+                    free(data);
+                    
+                    if (json) {
+                        cJSON *player_json = cJSON_GetObjectItem(json, player->name);
+                        if (player_json) {
+                            cJSON *supemons_array = cJSON_GetObjectItem(player_json, "supemons");
+                            if (supemons_array) {
+                                cJSON *supemon_json;
+                                cJSON_ArrayForEach(supemon_json, supemons_array) {
+                                    const char *supemon_name = cJSON_GetObjectItem(supemon_json, "name")->valuestring;
+                                    if (strcmp(supemon_name, player->selected_supemon) == 0) {
+                                        battle->player_supemon = create_supemon_by_name(supemon_name);
+                                        if (battle->player_supemon) {
+                                            load_supemon_stats(battle->player_supemon, supemon_json);
+                                        }
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        cJSON_Delete(json);
+                    }
+                }
+                
+                if (!battle->player_supemon) {
+                    battle->player_supemon = create_supemon_by_name(player->supemons[i]);
+                }
                 
                 printf("Go %s!\n", battle->player_supemon->name);
                 battle->is_player_turn = 0;

@@ -15,4 +15,5 @@ add_executable(Supemon main.c
     src/save.c 
     src/utils.c 
     src/item.c
+    src/center.c
     include/cJSON/cJSON.c)

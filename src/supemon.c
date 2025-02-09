@@ -1,6 +1,9 @@
 #include "supemon.h"
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include "cJSON.h"
+#include "player.h"
 
 Supemon* create_supemon_copy(const Supemon* source) {
     Supemon* new_supemon = malloc(sizeof(Supemon));

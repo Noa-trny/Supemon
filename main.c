@@ -6,13 +6,19 @@
 #include "save.h"
 #include <cJSON.h>
 #include "shop.h"
+#include "center.h"
 #define MAX_ITEMS 10
 
+void initialize_player(Player *player);
+void choose_save(Player *player);
+void add_starter_supemon(Player *player, int choice);
+void display_menu(Player *player);
+
 void initialize_player(Player *player) {
-    memset(player->name, 0, sizeof(player->name)); // clear name
-    player->supcoins = 0; // reset supcoins
-    memset(player->supemons, 0, sizeof(player->supemons)); // clear Supemons
-    memset(player->selected_supemon, 0, sizeof(player->selected_supemon)); // clear selected Supemon
+    memset(player->name, 0, sizeof(player->name));
+    player->supcoins = 0;
+    memset(player->supemons, 0, sizeof(player->supemons));
+    memset(player->selected_supemon, 0, sizeof(player->selected_supemon));
 }
 
 void choose_save(Player *player) {
@@ -59,8 +65,8 @@ void choose_save(Player *player) {
 }
 
 void add_starter_supemon(Player *player, int choice) {
-    const char* starter_name; // starter name
-    switch(choice) { // determine starter
+    const char* starter_name;
+    switch(choice) {
         case 1:
             starter_name = "Supmander"; 
             break;
@@ -71,17 +77,16 @@ void add_starter_supemon(Player *player, int choice) {
             starter_name = "Supirtle"; 
             break;
         default:
-            starter_name = "Supmander"; // this is default choice in case choice is wrong and not 1,2,3
+            starter_name = "Supmander";
             break;
     }
     
-    strncpy(player->supemons[0], starter_name, sizeof(player->supemons[0]) - 1); // copy name
-    player->supemons[0][sizeof(player->supemons[0]) - 1] = '\0'; // null-terminate
-    strncpy(player->selected_supemon, starter_name, sizeof(player->selected_supemon) - 1); // copy selected name
-    player->selected_supemon[sizeof(player->selected_supemon) - 1] = '\0'; // null-terminate
+    strncpy(player->supemons[0], starter_name, sizeof(player->supemons[0]) - 1);
+    player->supemons[0][sizeof(player->supemons[0]) - 1] = '\0';
+    strncpy(player->selected_supemon, starter_name, sizeof(player->selected_supemon) - 1);
+    player->selected_supemon[sizeof(player->selected_supemon) - 1] = '\0';
 }
 
-// Function to display the menu and handle user input
 void display_menu(Player *player) {
     int choice;
     printf("+-----------------------------+\n");
@@ -105,7 +110,7 @@ void display_menu(Player *player) {
             break;
         case 3:
             printf("Entering the Supemon Center...\n");
-            // implement function later here
+            heal_supemons(player);
             break;
         case 4:
             printf("Leaving the game...\n");
@@ -115,23 +120,22 @@ void display_menu(Player *player) {
             break;
     }
     save_game_state(player);
-    display_menu(player); // show the menu again
+    display_menu(player);
 }
 
 int main(void) {
-    Player player; // player variable
-    char player_pseudo[50]; // buffer for name
-    int supemon_choice; // Supemon choice
+    Player player;
+    char player_pseudo[50];
+    int supemon_choice;
 
-    initialize_player(&player); // Initialiser le joueur
-    initialize_shop_items(); // Initialiser les items de la boutique
+    initialize_player(&player);
+    initialize_shop_items();
+    choose_save(&player);
 
-    choose_save(&player); // choose save or new game
-
-    if (strlen(player.name) == 0) { // if name is empty
+    if (strlen(player.name) == 0) {
         printf("Enter your name: "); 
-        scanf("%49s", player_pseudo); // read name
-        strncpy(player.name, player_pseudo, sizeof(player.name) - 1); // copy name
+        scanf("%49s", player_pseudo);
+        strncpy(player.name, player_pseudo, sizeof(player.name) - 1);
         player.name[sizeof(player.name) - 1] = '\0';
 
         printf("Hello %s!\nWelcome in Supemon World!\n", player.name); 
@@ -143,22 +147,19 @@ int main(void) {
         printf("| 3 - Supirtle                |\n"); 
         printf("+-----------------------------+\n"); 
         printf("1, 2 or 3: "); 
-        scanf("%d", &supemon_choice); // player supemon starter choice
-        add_starter_supemon(&player, supemon_choice); // add starter
+        scanf("%d", &supemon_choice);
+        add_starter_supemon(&player, supemon_choice);
     } else {
         printf("Welcome back, %s!\n", player.name); 
         printf("\nYour Supemons:\n");
-        // print Supemons of the player (from save)
         for (int i = 0; i < MAX_SUPEMON && player.supemons[i][0] != '\0'; i++) {
             printf("%d - %s\n", i + 1, player.supemons[i]);
         }
     }
 
     display_menu(&player);
+    printf("Saving player data...\n");
+    save_player(&player);
 
-    // game end
-    printf("Saving player data...\n"); // saving message
-    save_player(&player); // save data
-
-    return 0; // exit
+    return 0;
 }
