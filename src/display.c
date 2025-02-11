@@ -66,7 +66,6 @@ void display_battle_status(Battle *battle) {
 // - indicates which supemon is currently selected
 void display_all_supemons_hp(const Player* player) {
     printf("\nSupemons HP Status:\n");
-    printf("--------------------------------\n");
     
     // load save file to get current HP values
     FILE *file = fopen("save.json", "r");
@@ -105,5 +104,4 @@ void display_all_supemons_hp(const Player* player) {
             cJSON_Delete(json);
         }
     }
-    printf("--------------------------------\n");
 } 
