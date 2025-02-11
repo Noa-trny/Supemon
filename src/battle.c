@@ -1,12 +1,10 @@
 #include "battle.h"
-#include "save.h"
+#include "utils.h"
 #include "display.h"
 #include <stdlib.h>
 #include <time.h>
 #include <stdio.h>
 #include <string.h>
-#include "cJSON.h"
-#include "utils.h"
 
 // handles move execution and damage calculation:
 // - calculates dodge chance based on evasion/accuracy ratio

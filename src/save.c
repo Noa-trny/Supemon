@@ -1,9 +1,8 @@
 #include "save.h" 
+#include "utils.h"
 #include <stdio.h> 
 #include <stdlib.h> 
 #include <string.h> 
-#include "cJSON.h"
-#include "supemon.h" 
 
 // main save function that handles all player data persistence:
 // - manages save file in JSON format for easy data structure

@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "cJSON.h"
-#include "player.h"
 
 // creates a new supemon instance by copying all data from a source supemon
 Supemon* create_supemon_copy(const Supemon* source) {

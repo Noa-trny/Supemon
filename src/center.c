@@ -1,12 +1,9 @@
 #include "center.h"
+#include "utils.h"
+#include "display.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "cJSON.h"
-#include "player.h"
-#include "supemon.h"
-#include "save.h"
-#include "display.h"
 
 // heals all player's supemons to full health:
 // - loads current supemon stats from save file
