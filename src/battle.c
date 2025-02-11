@@ -197,11 +197,16 @@ static void initialize_battle(Battle* battle, Player* player) {
         battle->player_supemon = create_supemon_by_name(player->selected_supemon);
     }
     
-    int enemy_choice = rand() % 3;
+    int enemy_choice = rand() % 8;
     switch (enemy_choice) {
         case 0: battle->enemy_supemon = create_supemon_copy(&SUPMANDER); break;
         case 1: battle->enemy_supemon = create_supemon_copy(&SUPASAUR); break;
         case 2: battle->enemy_supemon = create_supemon_copy(&SUPIRTLE); break;
+        case 3: battle->enemy_supemon = create_supemon_copy(&THUNDEROX); break;
+        case 4: battle->enemy_supemon = create_supemon_copy(&ROCKBEAR); break;
+        case 5: battle->enemy_supemon = create_supemon_copy(&PSYCAT); break;
+        case 6: battle->enemy_supemon = create_supemon_copy(&AQUAFIN); break;
+        case 7: battle->enemy_supemon = create_supemon_copy(&LEAFOX); break;
     }
     
     while (battle->enemy_supemon->level < battle->player_supemon->level) {

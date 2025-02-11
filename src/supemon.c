@@ -19,6 +19,16 @@ Supemon* create_supemon_by_name(const char* name) {
         return create_supemon_copy(&SUPASAUR);
     } else if (strcmp(name, "Supirtle") == 0) {
         return create_supemon_copy(&SUPIRTLE);
+    } else if (strcmp(name, "Thunderox") == 0) {
+        return create_supemon_copy(&THUNDEROX);
+    } else if (strcmp(name, "Rockbear") == 0) {
+        return create_supemon_copy(&ROCKBEAR);
+    } else if (strcmp(name, "Psycat") == 0) {
+        return create_supemon_copy(&PSYCAT);
+    } else if (strcmp(name, "Aquafin") == 0) {
+        return create_supemon_copy(&AQUAFIN);
+    } else if (strcmp(name, "Leafox") == 0) {
+        return create_supemon_copy(&LEAFOX);
     }
     return NULL;
 }
