@@ -285,6 +285,16 @@ void start_battle(Player *player) {
             enemy_turn(&battle);
         }
 
+        if (battle.player_supemon->level == 1 && battle.player_supemon->exp >= 500) {
+            level_up_supemon(battle.player_supemon);
+            battle.player_supemon->exp = battle.player_supemon->exp - 500;
+        }
+        if (battle.player_supemon->level >= 2){
+            while (battle.player_supemon->exp >= 1000){
+                level_up_supemon(battle.player_supemon);
+                battle.player_supemon->exp = battle.player_supemon->exp - 1000;
+            }
+        }
         update_player_supemon_stats(player, battle.player_supemon);
     }
     
