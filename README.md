@@ -1,5 +1,8 @@
 # Supemon
 
+<img src="https://github.com/simonpotel/Supemon/blob/dc7ce2d2567c5f18d53b435cc58f975b509309ed/assets/logo_supemon.png" width="300px" height="300px">
+
+
 ![C](https://img.shields.io/badge/C-00599C?style=for-the-badge&logo=c&logoColor=white)
 ![CMake](https://img.shields.io/badge/CMake-%23008FBA.svg?style=for-the-badge&logo=cmake&logoColor=white)
 
